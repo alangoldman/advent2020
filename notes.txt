@@ -1,0 +1,1 @@
+Q9P2: Another solution besides brute force? I used N^3 but there's an N^2 solution
