@@ -25,25 +25,27 @@ def eval(s):
             while i < len(s) and s[i].isdigit():
                 n = n*10 + int(s[i])
                 i += 1
-        elif s[i] in ['+', '-', '*']:
+        elif s[i] in ['+', '*']:
             last_op = s[i]
-            continue
+            if s[i] == '*':
+                n = eval(s[i+1:])
+                i = len(s)
+            else:
+                continue
             
         if last_num == None:
             last_num = n
         elif last_op == '+':
             last_num += n
-        elif last_op == '-':
-            last_num -= n
         elif last_op == '*':
             last_num *= n
                 
-    
     return last_num
     
-#print(eval('10 + 2 * 3 + 4 * 5 + 60'))
-#print(eval('1 + (2 * 3) + (4 * (5 + 6))'))
-#print(eval('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'))
+print(eval('1 + 2 * 3 + 4 * 5 + 6'))
+print(eval('1 + (2 * 3) + (4 * (5 + 6))'))
+print(eval('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'))
+
 
 total = 0
 for equation in lines:
