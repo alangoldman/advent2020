@@ -116,6 +116,7 @@ for tile1, _, _ in all_tiles:
     if left_matches == 0 and right_matches == 1 and top_matches == 0 and bottom_matches == 1:
         print('corner', tile1.id)
         stack.append((tile1, 0, 0))
+        break
 
 
 def clear_stale_tiles(row, col):
@@ -143,7 +144,7 @@ while len(stack) > 0:
         new_row += 1
     if new_row >= grid_len:
         # last spot filled, rejoice!
-        print('done')
+        print('solution found!')
         break
     
     next_states = get_next_states(new_row, new_col)
@@ -160,4 +161,58 @@ for i in [0, -1]:
     for j in [0, -1]:
         total *= int(grid[i, j].id)
 
-print(total)
+# print(total)
+
+# Part 2
+image_len = (tile_len-2) * grid_len
+image = np.zeros((image_len, image_len), int)
+
+for row in range(grid_len):
+    for col in range(grid_len):
+        for i in range(1, tile_len-1):
+            for j in range(1, tile_len-1):
+                image[row*(tile_len-2)+(i-1), col*(tile_len-2)+(j-1)] = grid[row, col].frame[i, j]
+
+monster_string = [
+"                  # ",
+"#    ##    ##    ###",
+" #  #  #  #  #  #   "]
+monster = np.zeros((3, 20), int)
+for row in range(3):
+    for col in range(20):
+        if monster_string[row][col] == '#':
+            monster[row, col] = 1
+
+
+def monster_check(image, offset_row, offset_col):
+    for i in range(3):
+        for j in range(20):
+            if monster[i, j] == 1 and image[i+offset_row, j+offset_col] != 1:
+                return False
+    return True
+
+
+def monster_mark(image, offset_row, offset_col):
+    for i in range(3):
+        for j in range(20):
+            if monster[i, j] == 1:
+                image[i + offset_row, j + offset_col] = 2
+
+
+for h in [False, True]:
+    if h:
+        image = np.fliplr(image)
+    for v in [False, True]:
+        if h and v:
+            continue
+        if v:
+            image = np.flipud(image)
+        for o in range(0, 4):
+            image = np.rot90(image)
+            for row in range(0, image_len-3):
+                for col in range(0, image_len-20):
+                    if monster_check(image, row, col):
+                        print('monster at', row, col)
+                        monster_mark(image, row, col)
+
+print(np.count_nonzero(image == 1))
