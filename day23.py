@@ -1,55 +1,92 @@
 #input = 389125467
 input = 135468729
+part2 = True
 
-cups = []
+
+class Node:
+    def __init__(self, num, next_node=None):
+        self.data = num
+        self.next = next_node
+
+    def __repr__(self):
+        return str(self.data) + ' -> ' + (str(self.next.data) if self.next is not None else 'None')
+
+    def print(self, comma=True):
+        result = ''
+        seen = set()
+        head = self
+        while head.data not in seen:
+            seen.add(head.data)
+            result += str(head.data)
+            if comma:
+                result += ', '
+            head = head.next
+        return result
+
+
+all_cups = []
 while input > 0:
-    cups.append(input % 10)
-    input = int(input/10)
+    cur = input % 10
+    all_cups.append(cur)
+    input = int(input / 10)
 
-cups.reverse()
-all_cups = cups.copy()
+all_cups.reverse()
+if part2:
+    for i in range(max(all_cups) + 1, 1000000 + 1):
+        all_cups.append(i)
+all_cups.reverse()
 
-current_cup = 0
+lookup = {}
+head = None
+last = None
+cups_min = None
+cups_max = None
+for cup in all_cups:
+    n = Node(cup, head)
+    lookup[cup] = n
+    head = n
+    if last is None:
+        last = n
+
+    if cups_min is None or cup < cups_min:
+        cups_min = cup
+    if cups_max is None or cup > cups_max:
+        cups_max = cup
+
+last.next = head
+current_cup = head
 
 
 def move(current_cup):
-    current_start = cups[current_cup]
-    destination = cups[current_cup] - 1
+    current_start = current_cup.data
+    destination_num = current_start - 1
 
-    pickup_location = (current_cup + 1) % len(cups)
+    pickup = current_cup.next
+    pickup_seen = set([pickup.data, pickup.next.data, pickup.next.next.data])
+    current_cup.next = current_cup.next.next.next.next
 
-    pickup = []
-    for i in range(3):
-        if pickup_location >= len(cups):
-            pickup_location = 0
-        pickup.append(cups.pop(pickup_location))
-    pickup.reverse()
+    if destination_num < cups_min:
+        destination_num = cups_max
+    while destination_num in pickup_seen:
+        destination_num -= 1
+        if destination_num < cups_min:
+            destination_num = cups_max
 
-    if destination < min(all_cups):
-        destination = max(all_cups)
-    while destination in pickup:
-        destination -= 1
-        if destination < min(all_cups):
-            destination = max(all_cups)
+    destination = lookup[destination_num]
+    pickup.next.next.next = destination.next
+    destination.next = pickup
 
-    destination_idx = cups.index(destination)
-    #if destination_idx == 0:
-        #destination_idx = len(cups)
-    insert_location = destination_idx + 1
-    for c in pickup:
-        cups.insert(insert_location, c)
-
-    current_cup = cups.index(current_start)
-    return (current_cup + 1) % len(cups)
+    return current_cup.next
 
 
-for i in range(1, 100+1):
+moves = 100 if not part2 else 10000000
+for i in range(1, moves + 1):
     current_cup = move(current_cup)
 
-p = cups.index(1) + 1
-result = ''
-for i in range(len(cups)-1):
-    p %= len(cups)
-    result += str(cups[p])
-    p += 1
-print(result)
+p = lookup[1].next
+if part2:
+    a = p.data
+    b = p.next.data
+    print(a, b, a*b)
+else:
+    print(p.print(comma=False)[:-1])
