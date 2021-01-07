@@ -1,9 +1,9 @@
 import numpy as np
-file = open("day24_input.txt", "r")
+file = open("day24_input.example.txt", "r")
 lines = [l.rstrip() for l in file.readlines()]
 file.close()
 
-size = 100
+size = 150
 floor = np.zeros((size, size), int)
 reference = (int(size/2), int(size/2))
 
@@ -37,6 +37,20 @@ for move in lines:
         pointer = (pointer[0] + dirs[d][0], pointer[1] + dirs[d][1])
         i += 1
 
-    floor[pointer] = 1 if floor[pointer] == 0 else 0
+    floor[pointer] = 1 if floor[pointer] == 0 else 0 # 0=white, 1=black
 
-print(np.count_nonzero(floor))
+for day in range(1, 101):
+    new_floor = floor.copy()
+    for row in range(2, size-2):
+        for col in range(2, size-2):
+            dirs = dirs_even if row % 2 == 0 else dirs_odd
+            black = 0
+            for d in dirs.keys():
+                black += floor[row + dirs[d][0], col + dirs[d][1]]
+            if floor[row, col] == 1 and black == 0 or black > 2:
+                new_floor[row, col] = 0
+            elif floor[row, col] == 0 and black == 2:
+                new_floor[row, col] = 1
+    floor = new_floor
+
+print(day, np.count_nonzero(floor))
